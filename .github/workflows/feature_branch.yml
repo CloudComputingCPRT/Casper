@@ -1,0 +1,17 @@
+name: Feature Branch Workflow
+
+on:
+  push:
+    branches:
+      - "feat/*"
+      - "fix/*"
+  pull_request:
+    branches:
+      - "feat/*"
+      - "fix/*"
+
+jobs:
+  lint-and-test:
+    uses: ./.github/workflows/lint_test.yml
+    with:
+      python-version: "3.10"
