@@ -15,3 +15,7 @@ jobs:
     uses: ./.github/workflows/lint_test.yml
     with:
       python-version: "3.10"
+  Analysis:
+    uses: ./.github/workflows/analysis.yml
+    with:
+      run_codeql: true
