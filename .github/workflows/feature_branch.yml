@@ -11,8 +11,10 @@ on:
       - "fix/*"
 
 permissions:
-  actions: read
-  security-events: write
+  contents: read          # Allows access to repository content
+  packages: read          # Allows access to packages
+  actions: read           # Allows reusable workflows
+  security-events: write  # Allows uploading security results
 
 jobs:
   lint-and-test:
