@@ -20,7 +20,7 @@ on:
         type: boolean
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: CodeQl
     # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/recommended-hardware-resources-for-running-codeql
     #   - https://gh.io/supported-runners-and-hardware-resources
