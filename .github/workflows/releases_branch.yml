@@ -47,7 +47,6 @@ jobs:
       dockerfile: ./Dockerfile
       image_name: Casper2024
       tags: |
-        type=ref,event=branch
-        type=raw,value=latest
+        [type=ref,event=branch, type=raw,value=latest]
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
