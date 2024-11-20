@@ -21,7 +21,7 @@ jobs:
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
     with:
-      python-version: "3.10"
+      python-version: "3.12"
 
   analysis:
     needs: lint-and-test
@@ -33,4 +33,4 @@ jobs:
     needs: Analysis
     uses: ./.github/workflows/build.yml
     with:
-      python-version: "3.10"
+      python-version: "3.12"
