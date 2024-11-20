@@ -20,13 +20,11 @@ permissions:
 jobs:
   # Step 1: Lint, Test, and Analyze for Pull Requests
   validate_changes:
-    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/lint_test.yml
     with:
       python_version: "3.10"
 
   analyze_codeql:
-    if: ${{ github.event_name == 'pull_request' }}
     needs: validate_changes
     uses: ./.github/workflows/analysis.yml
     with:
@@ -34,7 +32,7 @@ jobs:
 
   # Step 2: On Merge to releases/*, Build and Push Docker Image
   build_and_package:
-    if: ${{ github.event_name == 'push' && github.ref_name == startsWith('releases/') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/releases/') }}
     needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
     uses: ./.github/workflows/build.yml
     with:
