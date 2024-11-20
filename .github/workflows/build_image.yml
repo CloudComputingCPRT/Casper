@@ -19,7 +19,7 @@ on:
       tags:
         description: "Docker image tags"
         required: true
-        type: array
+        type: string
     secrets:
       token:
         description: "GitHub Token for authentication"
