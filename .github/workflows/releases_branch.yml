@@ -22,7 +22,7 @@ jobs:
   validate_changes:
     uses: ./.github/workflows/lint_test.yml
     with:
-      python-version: "3.10"
+      python-version: "3.12"
 
   analyze_codeql:
     needs: validate_changes
@@ -36,4 +36,18 @@ jobs:
     needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
     uses: ./.github/workflows/build.yml
     with:
-      python-version: "3.10"
+      python-version: "3.12"
+
+  build_docker_image:
+    if: ${{ github.event_name == 'push' }}
+    need: [validate_changes, analyze_codeql, build_and_package]
+    uses: ./.github/workflows/docker_build.yml
+    with:
+      docker_context: .
+      dockerfile: ./Dockerfile
+      image_name: my-python-app
+      tags: |
+        type=ref,event=branch
+        type=raw,value=latest
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
