@@ -12,20 +12,21 @@ provider "azurerm" {
   subscription_id = ""
 }
 
-resource "azurerm_resource_group" "casper" {
-  name     = "rg${random_integer.storage_name.id}"
-  location = "francecentral"
-}
 
-
-resource "random_integer" "storage_name" {
+resource "random_integer" "ri" {
   min = 0
   max = 10000
 }
 
 
+resource "azurerm_resource_group" "rg" {
+  name     = "rg${random_integer.ri.id}"
+  location = "francecentral"
+}
+
+
 resource "azurerm_storage_account" "storacc" {
-  name                     = "storacc${random_integer.storage_name.id}"
+  name                     = "storacc${random_integer.ri.id}"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
@@ -34,9 +35,9 @@ resource "azurerm_storage_account" "storacc" {
 
 
 resource "azurerm_service_plan" "example" {
-  name                = "serviceplan${random_integer.storage_name.id}" //Change this for more clarity 
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
+  name                = "serviceplan${random_integer.ri.id}" //Change this for more clarity 
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Windows"
   sku {
     tier = "Basic"     #Double check this
@@ -46,8 +47,8 @@ resource "azurerm_service_plan" "example" {
 
 
 resource "azurerm_windows_web_app" "example" {
-  name                = "webapp${random_integer.storage_name.id}" 
-  resource_group_name = azurerm_resource_group.example.name
+  name                = "webapp${random_integer.ri.id}" 
+  resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_service_plan.example.location
   service_plan_id     = azurerm_service_plan.example.id
 
