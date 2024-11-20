@@ -37,8 +37,10 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       python-version: "3.12"
+
   build_docker_image:
     if: ${{ github.event_name == 'push' }}
+    need: [validate_changes, analyze_codeql, build_and_package]
     uses: ./.github/workflows/docker_build.yml
     with:
       docker_context: .
