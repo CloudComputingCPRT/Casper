@@ -41,11 +41,11 @@ jobs:
   build_docker_image:
     if: ${{ github.event_name == 'push' }}
     need: [validate_changes, analyze_codeql, build_and_package]
-    uses: ./.github/workflows/docker_build.yml
+    uses: ./.github/workflows/build_image.yml
     with:
       docker_context: .
       dockerfile: ./Dockerfile
-      image_name: my-python-app
+      image_name: Casper2024
       tags: |
         type=ref,event=branch
         type=raw,value=latest
