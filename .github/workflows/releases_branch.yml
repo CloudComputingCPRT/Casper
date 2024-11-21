@@ -45,7 +45,7 @@ jobs:
     with:
       docker_context: .
       dockerfile: ./Dockerfile
-      image_name: Casper2024
+      image_name: pre_release_image
       tags: |
         type=ref,event=branch
         type=raw,value=latest
