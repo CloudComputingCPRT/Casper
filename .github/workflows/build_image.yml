@@ -1,0 +1,92 @@
+name: Docker Build and Push
+
+on:
+  workflow_call:
+    inputs:
+      docker_context:
+        description: "Context path"
+        required: true
+        type: string
+      dockerfile:
+        description: "Dockerfile path"
+        required: false
+        type: string
+        default: Dockerfile
+      image_name:
+        description: "Docker image name"
+        required: true
+        type: string
+      tags:
+        description: "Docker image tags"
+        required: true
+        type: string
+    secrets:
+      token:
+        description: "GitHub Token for authentication"
+        required: true
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Log in to the GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.token }}
+
+      # Step 3: Extract metadata for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ inputs.image_name }}
+          tags: ${{ inputs.tags }}
+
+      # Step 4: Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ inputs.docker_context }}
+          file: ${{ inputs.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+##################### Futur implementation need testing and infrastructure setup #############################
+# deploy_infrastructure:
+#    needs: build_and_push_image
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+
+#      - name: Setup Terraform
+#        uses: hashicorp/setup-terraform@v2
+#        with:
+#          terraform_version: 1.5.5
+
+#      - name: Initialize Terraform
+#        run: terraform init
+
+#      - name: Validate Terraform
+#        run: terraform validate
+
+#      - name: Apply Terraform
+#        env:
+#          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+#          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+#          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+#        run: terraform apply -auto-approve
+#######################################################################

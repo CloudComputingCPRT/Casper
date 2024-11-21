@@ -1,0 +1,53 @@
+name: Release Workflow
+
+on:
+  # Trigger for pull requests targeting release branches
+  pull_request:
+    branches:
+      - releases/*
+
+  # Trigger when a commit is pushed to a release branch (after a PR merge)
+  push:
+    branches:
+      - releases/*
+
+permissions:
+  contents: read
+  packages: write
+  actions: read
+  security-events: write
+
+jobs:
+  # Step 1: Lint, Test, and Analyze for Pull Requests
+  validate_changes:
+    uses: ./.github/workflows/lint_test.yml
+    with:
+      python-version: "3.12"
+
+  analyze_codeql:
+    needs: validate_changes
+    uses: ./.github/workflows/analysis.yml
+    with:
+      run_codeql: true
+
+  # Step 2: On Merge to releases/*, Build and Push Docker Image
+  build_and_package:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/releases') }}
+    needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
+    uses: ./.github/workflows/build.yml
+    with:
+      python-version: "3.12"
+
+  build_docker_image:
+    if: ${{ github.event_name == 'push' }}
+    needs: [validate_changes, analyze_codeql, build_and_package]
+    uses: ./.github/workflows/build_image.yml
+    with:
+      docker_context: .
+      dockerfile: ./Dockerfile
+      image_name: pre_release_image
+      tags: |
+        type=ref,event=branch
+        type=raw,value=latest
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
