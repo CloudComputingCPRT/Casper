@@ -1,74 +1,89 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.3.0"
-    }
-  }
+data "azurerm_subscription" "current" {
 }
 
-provider "azurerm" {
-  features {}
-  subscription_id = var.subscription_id
+data "azuread_user" "user" {
+  user_principal_name = var.email_address
 }
 
-
-resource "random_integer" "ri" {
-  min = 0
-  max = 10000
+data "github_user" "user" {
+  username = var.github_handle
 }
 
-
-resource "azurerm_resource_group" "rg" {
-  name     = "Casper-rg-${random_integer.ri.id}"
+resource "azurerm_resource_group" "week_3" {
+  name     = var.resource_group_name
   location = var.location
 }
 
-
-resource "azurerm_storage_account" "storacc" {
-  name                     = "storacc${random_integer.ri.id}"
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
+locals {
+  resource_group = azurerm_resource_group.week_3.name
+  location       = azurerm_resource_group.week_3.location
+  app_name       = "api-casper"
 }
 
+module "api_service" {
+  source = "./modules/app_service"
+  count  = var.enable_api ? 1 : 0
 
-resource "azurerm_service_plan" "example" {
-  name                = "service-plan-${random_integer.ri.id}" //Change this for more clarity
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  os_type             = "Linux"
-  sku_name            = "B1"
+  resource_group_name = local.resource_group
+  location            = local.location
+
+  app_name            = local.app_name
+  pricing_plan        = "B1"
+  docker_image        = "cloudcomputingcprt/casper/pre_release_image:latest"
+  docker_registry_url = "https://ghcr.io"
+
+  app_settings = {
+    DATABASE_HOST     = local.database_connection.host
+    DATABASE_PORT     = local.database_connection.port
+    DATABASE_NAME     = local.database.name
+    DATABASE_USER     = local.database.username
+    DATABASE_PASSWORD = local.database.password
+
+    STORAGE_ACCOUNT_URL = local.storage_url
+
+    NEW_RELIC_LICENSE_KEY = var.new_relic_licence_key
+    NEW_RELIC_APP_NAME    = local.app_name
+  }
 }
 
+module "database" {
+  source = "./modules/database"
+  count  = var.enable_database ? 1 : 0
 
-resource "azurerm_linux_web_app" "app_service" {
-  name                = "web-app-${random_integer.ri.id}" // var.app_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  service_plan_id     = azurerm_service_plan.example.id
-  app_settings        = var.app_settings
+  resource_group_name = local.resource_group
+  location            = local.location
 
-  identity {
-    type = "SystemAssigned"
+  entra_administrator_tenant_id      = data.azurerm_subscription.current.tenant_id
+  entra_administrator_object_id      = data.azuread_user.user.object_id
+  entra_administrator_principal_type = "User"
+  entra_administrator_principal_name = data.azuread_user.user.user_principal_name
+
+  server_name                     = local.database.server_name
+  database_administrator_login    = local.database.username
+  database_administrator_password = local.database.password
+  database_name                   = local.database.name
+}
+
+locals {
+  database_connection = {
+    host = try(module.database[0].server_address, null)
+    port = try(module.database[0].port, null)
   }
+}
 
-  site_config {
-    always_on = var.pricing_plan != "F1"
+module "api_storage" {
+  source = "./modules/storage"
+  count  = var.enable_storage ? 1 : 0
 
-    application_stack {
-      docker_registry_url = var.docker_registry_url
-      docker_image_name   = var.docker_image
-    }
-  }
+  resource_group_name  = local.resource_group
+  location             = local.location
+  storage_account_name = local.storage.name
+  container_name       = "api"
 
-  logs {
-    http_logs {
-      file_system {
-        retention_in_days = 1
-        retention_in_mb   = 50
-      }
-    }
-  }
+  service_principal_id = var.enable_storage_read_for_api ? module.api_service[0].principal_id : null
+  user_principal_id    = var.enable_storage_read_for_user ? data.azuread_user.user.object_id : null
+}
+
+locals {
+  storage_url = try(module.api_storage[0].url, null)
 }

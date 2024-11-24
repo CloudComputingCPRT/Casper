@@ -1,58 +1,176 @@
-variable "subscription_id" {
+variable "location" {
   type        = string
-  nullable    = false
-  description = "Your subscription id"
+  default     = "francecentral"
+  description = "Location of the resources"
 }
 
 variable "resource_group_name" {
   type        = string
-  nullable    = false
-  description = "Name of the resource group within which to create the app service"
+  default     = "casper"
+  description = "Name of the resource group in which all resource are grouped"
 }
 
-variable "location" {
+
+#########
+# Flags #
+#########
+
+
+variable "enable_database" {
+  type        = bool
+  default     = true
+  description = "Whether to deploy the PostgreSQL database or not"
+}
+
+variable "enable_api" {
+  type        = bool
+  default     = true
+  description = "Whether to deploy the HTTP API or not"
+}
+
+variable "enable_storage" {
+  type        = bool
+  default     = true
+  description = "Whether to deploy the blob storage"
+}
+
+variable "enable_storage_read_for_user" {
+  type        = bool
+  default     = true
+  description = "Whether to enable IAM service blob storage reader role for the user"
+}
+
+variable "enable_storage_read_for_api" {
+  type        = bool
+  default     = true
+  description = "Whether to enable IAM blob storage reader role binding for the API service"
+}
+
+
+############
+# Identity #
+############
+
+
+variable "github_handle" {
   type        = string
   nullable    = false
-  description = "Name of the location where to create the app service"
-  default     = "francecentral"
+  description = "Your GitHub username (not your email, your @username)"
 }
 
-variable "app_name" {
+variable "subscription_id" {
+  type        = string
+  nullable    = false
+  description = <<EOT
+Your Azure subscription ID
+
+To retrieve it:
+az login --use-device-code
+az account show --query='id' --output=tsv
+EOT
+}
+
+variable "email_address" {
+  type        = string
+  nullable    = false
+  description = "Your JUNIA email address. Example: firstname.lastname@*.junia.com"
+}
+
+
+############
+# Database #
+############
+
+
+variable "database_server_name" {
   type        = string
   default     = null
-  description = "Name of the application"
+  description = "Name of the database server. Example: playground-computing-handlegithub"
 }
 
-variable "pricing_plan" {
+variable "database_name" {
   type        = string
-  default     = "F1"
-  description = "SKU for the pricing plan"
+  default     = null
+  description = "Name for the database within the server"
+}
 
-  validation {
-    condition = contains([
-      "B1", "B2", "B3", "D1", "F1", "I1", "I2", "I3", "I1v2",
-      "I2v2", "I3v2", "I4v2", "I5v2", "I6v2", "P1v2", "P2v2",
-      "P3v2", "P0v3", "P1v3", "P2v3", "P3v3", "P1mv3", "P2mv3",
-      "P3mv3", "P4mv3", "P5mv3", "S1", "S2", "S3", "SHARED",
-      "EP1", "EP2", "EP3", "FC1", "WS1", "WS2", "WS3", "Y1"
-    ], var.pricing_plan)
-    error_message = "The pricing plan must be a valid SKU. See https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan#sku_name."
+variable "database_username" {
+  type        = string
+  default     = null
+  description = "Administrator username for the database"
+}
+
+variable "database_password" {
+  type        = string
+  default     = null
+  sensitive   = true
+  description = <<EOT
+"Administrator password for the database"
+
+The password must be at least 8 characters and at most 128 characters.
+The password must contain characters from three of the following categories:
+– English uppercase letters
+- English lowercase letters
+- numbers (0-9)
+- non-alphanumeric characters (!, $, #, %, etc.)
+EOT
+}
+
+resource "random_password" "database_password" {
+  length      = 24
+  min_special = 1
+  min_numeric = 2
+  min_lower   = 2
+  min_upper   = 2
+}
+
+
+#############
+# New relic #
+#############
+
+
+variable "new_relic_licence_key" {
+  type        = string
+  sensitive   = true
+  default     = null
+  description = <<EOT
+New relic licence key used by the app service container to publish logs & metrics.
+
+See documentation https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/
+
+To retrieve it, go to https://send.bitwarden.com/#bX2ytcWjUUSvJrIAAXayPA/RVbs3obbFkjeybNQuzrBCw
+The Bitwarden password will be displayed in class.
+EOT
+}
+
+
+###########
+# Storage #
+###########
+
+
+variable "storage_name" {
+  type        = string
+  default     = null
+  description = "Name of the storage account"
+}
+
+
+##########
+# Locals #
+##########
+
+
+locals {
+  database = {
+    server_name = var.database_server_name != null ? var.database_server_name : "playground-computing-${var.github_handle}"
+    name        = var.database_name != null ? var.database_name : var.github_handle
+    username    = var.database_username != null ? var.database_username : var.github_handle
+    password    = var.database_password != null ? var.database_password : random_password.database_password.result
   }
-}
 
-variable "docker_image" {
-  type = string
-  nullable = false
-  default = "cloudcomputingcprt/casper/pre_release_image:latest"
-}
-
-variable "docker_registry_url" {
-  type = string
-  default = "https://ghcr.io"
-}
-
-variable "app_settings" {
-  description = "App service settings (list of environment variables)"
-  default = {}
-  type = map(string)
+  storage = {
+    name = var.storage_name != null ? var.storage_name : var.github_handle
+  }
 }
