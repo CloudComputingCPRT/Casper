@@ -9,14 +9,14 @@ data "github_user" "user" {
   username = var.github_handle
 }
 
-resource "azurerm_resource_group" "week_3" {
+resource "azurerm_resource_group" "casper" {
   name     = var.resource_group_name
   location = var.location
 }
 
 locals {
-  resource_group = azurerm_resource_group.week_3.name
-  location       = azurerm_resource_group.week_3.location
+  resource_group = azurerm_resource_group.casper.name
+  location       = azurerm_resource_group.casper.location
   app_name       = "api-casper"
 }
 

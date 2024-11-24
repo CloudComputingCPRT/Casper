@@ -1,5 +1,5 @@
 output "server_address" {
-  value = azurerm_postgresql_flexible_server.playground_computing.fqdn
+  value = azurerm_postgresql_flexible_server.postgresql_database.fqdn
   description = "Hostname to connect to the database server"
 }
 
