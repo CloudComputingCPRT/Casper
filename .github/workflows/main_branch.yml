@@ -32,7 +32,7 @@ jobs:
 
   # Step 2: On Merge to main, Build and Push Docker Image
   build_and_package:
-    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/releases') }}
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main') }}
     needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
     uses: ./.github/workflows/build.yml
     with:
