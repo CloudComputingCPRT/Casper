@@ -65,7 +65,6 @@ variable "subscription_id" {
 Your Azure subscription ID
 
 To retrieve it:
-az login --use-device-code
 az account show --query='id' --output=tsv
 EOT
 }
@@ -73,7 +72,7 @@ EOT
 variable "email_address" {
   type        = string
   nullable    = false
-  description = "Your JUNIA email address. Example: firstname.lastname@*.junia.com"
+  description = "Your Junia email address. Example: firstname.lastname@*.junia.com"
 }
 
 
