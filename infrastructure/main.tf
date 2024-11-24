@@ -39,10 +39,7 @@ resource "azurerm_service_plan" "example" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Windows"
-  sku {
-    tier = "Basic"     #Double check this
-    size = "B1"   
-  }
+  sku_name            = "B1"
 }
 
 
