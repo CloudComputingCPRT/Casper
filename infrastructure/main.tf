@@ -35,7 +35,7 @@ resource "azurerm_storage_account" "storacc" {
 
 
 resource "azurerm_service_plan" "example" {
-  name                = "serviceplan${random_integer.ri.id}" //Change this for more clarity
+  name                = "service-plan-${random_integer.ri.id}" //Change this for more clarity
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   os_type             = "Linux"
@@ -44,7 +44,7 @@ resource "azurerm_service_plan" "example" {
 
 
 resource "azurerm_linux_web_app" "app_service" {
-  name                = "web-app${random_integer.ri.id}" // var.app_name
+  name                = "web-app-${random_integer.ri.id}" // var.app_name
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.example.id
