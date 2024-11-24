@@ -43,12 +43,12 @@ variable "pricing_plan" {
 variable "docker_image" {
   type = string
   nullable = false
-  default = "ghcr.io/cloudcomputingcprt/casper/release_image:latest"
+  default = "cloudcomputingcprt/casper/pre_release_image:latest"
 }
 
 variable "docker_registry_url" {
   type = string
-  default = "https://index.docker.io"
+  default = "https://ghcr.io"
 }
 
 variable "app_settings" {
