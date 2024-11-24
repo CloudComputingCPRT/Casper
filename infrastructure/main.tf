@@ -9,7 +9,7 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = ""
+  subscription_id = var.subscription_id
 }
 
 
@@ -20,8 +20,8 @@ resource "random_integer" "ri" {
 
 
 resource "azurerm_resource_group" "rg" {
-  name     = "rg${random_integer.ri.id}"
-  location = "francecentral"
+  name     = "Casper-rg-${random_integer.ri.id}"
+  location = var.location
 }
 
 
@@ -35,22 +35,40 @@ resource "azurerm_storage_account" "storacc" {
 
 
 resource "azurerm_service_plan" "example" {
-  name                = "serviceplan${random_integer.ri.id}" //Change this for more clarity 
+  name                = "serviceplan${random_integer.ri.id}" //Change this for more clarity
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  os_type             = "Windows"
+  os_type             = "Linux"
   sku_name            = "B1"
 }
 
 
-resource "azurerm_windows_web_app" "example" {
-  name                = "webapp${random_integer.ri.id}" 
+resource "azurerm_linux_web_app" "app_service" {
+  name                = "web-app${random_integer.ri.id}" // var.app_name
   resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_service_plan.example.location
+  location            = azurerm_resource_group.rg.location
   service_plan_id     = azurerm_service_plan.example.id
+  app_settings        = var.app_settings
 
-  //site_config {}    Maybe activate this in order to complete the deploy 
+  identity {
+    type = "SystemAssigned"
+  }
+
+  site_config {
+    always_on = var.pricing_plan != "F1"
+
+    application_stack {
+      docker_registry_url = var.docker_registry_url
+      docker_image_name   = var.docker_image
+    }
+  }
+
+  logs {
+    http_logs {
+      file_system {
+        retention_in_days = 1
+        retention_in_mb   = 50
+      }
+    }
+  }
 }
-
-
-
