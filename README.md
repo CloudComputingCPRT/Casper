@@ -32,16 +32,16 @@ graph TD;
     %% CI/CD Process
     subgraph CI_CD_Process [CI/CD Process]
         %% Feature/Fix Branches
-        F1[Lint & Test] --> F2[Code Analysis (CodeQL)]
+        F1[Lint & Test] --> F2[Code Analysis]
         F2 --> F3[Build]
 
         %% Release Branches
-        R1[Validate Changes (check Feature CI/CD)] --> R2[Code Analysis (CodeQL)]
+        R1[Validate Changes] --> R2[Code Analysis]
         R2 --> R3[Build]
         R3 --> R4[Build Image - Pre Release]
 
         %% Main Branch
-        M1[Validate Changes (check Release CI/CD)] --> M2[Code Analysis (CodeQL)]
+        M1[Validate Changes] --> M2[Code Analysis]
         M2 --> M3[Build]
         M3 --> M4[Build Image - Release]
     end
