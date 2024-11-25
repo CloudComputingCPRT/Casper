@@ -1,27 +1,30 @@
+# Workflow Name: Docker Build and Push
+# Description: Builds a Docker image from the specified context and Dockerfile, then pushes it to the GitHub Container Registry (GHCR).
+# Note: This workflow is triggered via `workflow_call` and relies on inputs and secrets for configuration.
 name: Docker Build and Push
 
 on:
   workflow_call:
     inputs:
-      docker_context:
+      docker_context:   # The context path for the Docker build (e.g., the root directory of the project).
         description: "Context path"
         required: true
         type: string
-      dockerfile:
+      dockerfile:       # The path to the Dockerfile used for the build (defaults to `Dockerfile`).
         description: "Dockerfile path"
         required: false
         type: string
         default: Dockerfile
-      image_name:
+      image_name:       # The name of the Docker image to be built and pushed.
         description: "Docker image name"
         required: true
         type: string
-      tags:
+      tags:             # Comma-separated tags to apply to the Docker image.
         description: "Docker image tags"
         required: true
         type: string
     secrets:
-      token:
+      token:            # Secret token for authenticating with the GitHub Container Registry.
         description: "GitHub Token for authentication"
         required: true
 
@@ -31,18 +34,24 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+  
     steps:
+      # Step 1: Check out the repository code
+      # Purpose: Retrieve the repository's source code to the runner's workspace for building the Docker image.
       - name: Checkout code
         uses: actions/checkout@v3
-
+      
+      # Step 2: Log in to GitHub Container Registry (GHCR)
+      # Purpose: Authenticate with GHCR using the provided GitHub token.
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.token }}
-
+      
+      # Step 3: Extract Docker metadata
+      # Purpose: Generate metadata for the Docker image (e.g., tags and labels) based on inputs.
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v4
@@ -50,6 +59,8 @@ jobs:
           images: ghcr.io/${{ github.repository }}/${{ inputs.image_name }}
           tags: ${{ inputs.tags }}
 
+      # Step 4: Build and push Docker image
+      # Purpose: Build the Docker image from the specified context and Dockerfile, and push it to GHCR.
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:

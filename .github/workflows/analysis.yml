@@ -1,10 +1,14 @@
-#
+# Workflow Name: CodeQL Advanced
+# Description: This workflow performs advanced static analysis using GitHub's CodeQL for supported languages.
+# Note: This workflow is designed to be invoked via `workflow_call` and is configurable using inputs.
+
 name: "CodeQL Advanced"
 
+# Trigger: This workflow runs only when called by another workflow.
 on:
   workflow_call:
     inputs:
-      run_codeql:
+      run_codeql:   # Input to decide whether CodeQL analysis should be executed.
         description: "Whether to run CodeQL analysis"
         required: true
         type: boolean
@@ -13,11 +17,9 @@ jobs:
     name: CodeQl
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     permissions:
-      # required for all workflows
-      security-events: write
-
-      # required to fetch internal or private CodeQL packs
-      packages: read
+      # Required permissions to perform CodeQL analysis.
+      security-events: write  # Allows recording security analysis results in the repository.
+      packages: read          # Allows fetching internal or private CodeQL packs.
 
       # only required for workflows in private repositories
       actions: read
@@ -29,25 +31,36 @@ jobs:
         include:
         - language: python
           build-mode: none
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # Step 1: Check out the repository
+      # Purpose: Retrieve the repository's codebase to the runner's workspace.
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
-    - if: matrix.build-mode == 'manual'
-      shell: bash
-      run: |
-        echo 'If you are using a "manual" build mode for one or more of the' \
-          'languages you are analyzing, replace this with the commands to build' \
-          'your code, for example:'
-        echo '  make bootstrap'
-        echo '  make release'
-        exit 1
+      # Step 2: Initialize CodeQL
+      # Purpose: Set up the CodeQL action with the specified language and build mode.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      
+      # Step 3 (Conditional): Build code manually if build mode is 'manual'
+      # Purpose: Provides a placeholder for manual build commands if required for the language.
+      - if: matrix.build-mode == 'manual'
+        shell: bash
+        run: |
+          echo 'If you are using a "manual" build mode for one or more of the' \
+            'languages you are analyzing, replace this with the commands to build' \
+            'your code, for example:'
+          echo '  make bootstrap'
+          echo '  make release'
+          exit 1
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      # Step 4: Perform CodeQL Analysis
+      # Purpose: Run the CodeQL analysis to identify security vulnerabilities or quality issues.
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"

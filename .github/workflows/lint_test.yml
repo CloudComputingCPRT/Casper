@@ -1,34 +1,50 @@
+# Workflow Name: Lint code and run tests
+# Description: This workflow performs linting and testing for Python code.
+# Note: This workflow is designed to be called by other workflows using 'workflow_call'.
+
 name: Lint code and run tests 
 
-# only use this action when a workflow call it
+# Trigger: This workflow is executed only when called by another workflow.
 on:
   workflow_call:
     inputs:
-      python-version:
+      python-version:   # Specify the Python version to use for this workflow.
         required: true
         type: string
 
 jobs:
   lint-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    # Use the latest Ubuntu environment for the job.
     steps:
 
+       # Step 1: Check out the repository
+      # Purpose: Retrieve the repository's code to the runner's workspace.
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Set up the specified Python version
+      # Purpose: Install and configure the Python version provided as input.
       - name: Setting up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python-version }}
       
+      # Step 3: Install uv (a universal CLI tool for Python package management)
+      # Purpose: Install 'uv', a dependency manager and tool for managing Python projects.
       - name: Install uv
         run: pip install uv
 
+      # Step 4: Install project dependencies and create a virtual environment
+      # Purpose: Synchronize and set up the project environment using 'uv sync'.
       - name: Install dependencies and create venv
         run: uv sync
 
+      # Step 5: Run the linter
+      # Purpose: Use Flake8 to check code style and quality. Customize max line length as needed.
       - name: Run linter (via Flake8)
         run: uv run flake8 --max-line-length 99 $GITHUB_WORKSPACE/examples/
 
+      # Step 6: Run tests
+      # Purpose: Execute the test suite located in the 'tests' directory using pytest.
       - name: Run tests (via pytest)
         run: uv run pytest $GITHUB_WORKSPACE/tests/
