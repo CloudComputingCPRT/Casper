@@ -37,7 +37,7 @@ def read_examples():
             "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'examples')"
         )
         table_exists = cur.fetchone()[0]
-
+        
         if not table_exists:
             cur.execute("CREATE TABLE examples (id SERIAL PRIMARY KEY, name TEXT)")
             conn.commit()
