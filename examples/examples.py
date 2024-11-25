@@ -19,6 +19,7 @@ def read_root():
 
 @app.get("/examples")
 def read_examples():
+
     try:
         conn = psycopg2.connect(
             host=get_environment_variable("DATABASE_HOST"),
@@ -30,6 +31,21 @@ def read_examples():
         )
 
         cur = conn.cursor()
+
+        # check if the table "examples" exists
+        cur.execute(
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'examples')"
+        )
+        table_exists = cur.fetchone()[0]
+        if not table_exists:
+            cur.execute("CREATE TABLE examples (id SERIAL PRIMARY KEY, name TEXT)")
+            conn.commit()
+
+            # insert an example row
+            cur.execute("INSERT INTO examples (name) VALUES ('Hello world!')")
+            conn.commit()
+
+        # retrieve all rows
         cur.execute("SELECT * FROM examples")
         examples = cur.fetchall()
         return {"examples": examples}
@@ -51,7 +67,9 @@ def read_quotes():
     try:
         account_url = get_environment_variable("STORAGE_ACCOUNT_URL")
         default_credential = DefaultAzureCredential(process_timeout=2)
-        blob_service_client = BlobServiceClient(account_url, credential=default_credential)
+        blob_service_client = BlobServiceClient(
+            account_url, credential=default_credential
+        )
 
         container_client = blob_service_client.get_container_client(container="api")
         quotes = json.loads(container_client.download_blob("quotes.json").readall())

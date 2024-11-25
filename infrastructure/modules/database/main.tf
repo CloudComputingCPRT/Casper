@@ -11,7 +11,7 @@ resource "azurerm_postgresql_flexible_server" "postgresql_database" {
   geo_redundant_backup_enabled  = false # Disabling geo-redundant backups to prevent unexpected costs
   location                      = var.location # Use the same location as the resource group
   name                          = var.server_name # Name of the PostgreSQL Flexible Server
-  public_network_access_enabled = false # Disable public network access
+  public_network_access_enabled = true # Disable public network access
   resource_group_name           = var.resource_group_name # Use the same resource group as the other resources
   sku_name                      = "B_Standard_B1ms" # Basic tier with 1 vCore and 2 GB memory
   storage_tier                  = "P4" 
