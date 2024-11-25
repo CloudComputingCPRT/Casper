@@ -1,5 +1,6 @@
 name: Lint code and run tests 
 
+# only use this action when a workflow call it
 on:
   workflow_call:
     inputs:

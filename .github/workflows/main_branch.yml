@@ -1,12 +1,10 @@
 name: Main Workflow
 
 on:
-  # Trigger for pull requests targeting main branche
   pull_request:
     branches:
       - main
 
-  # Trigger when a commit is pushed to a release branch (after a PR merge)
   push:
     branches:
       - main
@@ -18,7 +16,6 @@ permissions:
   security-events: write
 
 jobs:
-  # Step 1: Lint, Test, and Analyze for Pull Requests
   validate_changes:
     uses: ./.github/workflows/lint_test.yml
     with:
@@ -30,7 +27,6 @@ jobs:
     with:
       run_codeql: true
 
-  # Step 2: On Merge to main, Build and Push Docker Image
   build_and_package:
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main') }}
     needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge

@@ -18,7 +18,6 @@ permissions:
   security-events: write
 
 jobs:
-  # Step 1: Lint, Test, and Analyze for Pull Requests
   validate_changes:
     uses: ./.github/workflows/lint_test.yml
     with:
@@ -30,10 +29,9 @@ jobs:
     with:
       run_codeql: true
 
-  # Step 2: On Merge to releases/*, Build and Push Docker Image
   build_and_package:
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/releases') }}
-    needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
+    needs: [validate_changes, analyze_codeql]
     uses: ./.github/workflows/build.yml
     with:
       python-version: "3.12"
