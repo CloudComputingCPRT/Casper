@@ -33,7 +33,7 @@ module "api_service" {
 
   app_name            = local.app_name
   pricing_plan        = "B1" # Basic tier
-  docker_image        = "cloudcomputingcprt/casper/pre_release_image:latest" # Docker image
+  docker_image        = "cloudcomputingcprt/casper/release_image:latest" # Docker image
   docker_registry_url = "https://ghcr.io" # GitHub Container Registry (where the image is stored)
 
   # Environment variables
