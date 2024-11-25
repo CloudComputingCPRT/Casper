@@ -1,32 +1,53 @@
 # Project CASPER
 
-### Members:
+## Members:
 
 - Cyril Cuvelier
 - Paul Marliot
 - Thibaut Tournemaine
 - Rémi Van Boxem
 
-### How to use it 
+## How to Use
 
-Please refer to this [file](https://github.com/CloudComputingCPRT/Casper/blob/main/HOWTO.md) for local use.
+### Local Setup
 
-you need to start by creating a **terraform.tfvars** in th ./infrastructure/ directory and filling it with thoose variables:
+Follow the instructions in the [HOWTO.md file](https://github.com/CloudComputingCPRT/Casper/blob/main/HOWTO.md) to set up the project locally.
+
+### Configuration
+
+Create a `terraform.tfvars` file in the `./infrastructure/` directory and populate it with the following variables:
+
+```hcl
+github_handle         = "<your GitHub account name>"
+email_address         = "<your Azure email address>"
+subscription_id       = "<your Azure subscription ID>"
+database_name         = "<desired name for the database>"
+database_username     = "<desired username for the database>"
+new_relic_licence_key = "<your New Relic license key>"
 ```
-github_handle         = <your github account name>
-email_address         = <your azure email adress>
-subscription_id       = <your subscription id>
-database_name         = <the wanted name for the database>
-database_username     = <the wanted username for the database>
-new_relic_licence_key = <your new relic license key>
-```
 
-### Workflow
-We used github reusable actions for more adaptability we shared the actions with some other groups to help them and prove the modularity of reusable actions.
-It's actually overkill for the project but a good example of how it should work for a bigger project.
+---
 
-- For the working branches we added a linter (flake8), used the provided tests, a code analysis and a build check.  
-- For the releases and main branches, we first validate the changes comming from the pullrequest and then use the same workflow without the lient & test, and adding a build docker image action to create our packages.
+## Workflow
+
+Our CI/CD pipeline leverages reusable GitHub Actions for modularity and scalability, making the workflows adaptable to other teams or projects. While this approach is robust and reusable, it exceeds the complexity required for this project but serves as a demonstration of best practices for larger projects.
+
+### Branch Management
+
+- **Main Branch (`main`)**: Production-ready code.
+- **Release Branches (`releases/*`)**: Pre-production staging.
+- **Feature Branches (`feat/*`)**: Feature development.
+- **Fix Branches (`fix/*`)**: Bug fixes.
+
+### CI/CD Pipeline Overview
+
+The pipeline ensures quality and reliability at every stage:
+
+- **Feature Branches**: Linting, testing, code analysis, and build checks.
+- **Release Branches**: Validation of pull requests, code analysis, and pre-release image builds.
+- **Main Branch**: Validation of changes, code analysis, and production-ready image builds.
+
+### Workflow Diagram
 
 ```mermaid
 graph TD;
@@ -77,25 +98,27 @@ graph TD;
     W6 --> M1
 ```
 
-### Troubleshooting
-During the project we had some problems. The first one is that terraform apply is time consuming, with an average of 20 minutess per try it was complicated to debug some configuration errors.
-Here's some issue we encountered:
+---
 
-###### Deployement:
+## Troubleshooting
 
-- Conflict: junia students accounts don't have the required permission to create credentials that enable deployement from github action.
-- Identification: trying to deploy with the commented code at the end of the build_image.yml wasn't working due to missing credentials.
+During the project, several issues were encountered. Below are the key challenges and their resolutions:
 
-###### Database:
+### Deployment
 
-- Conflict: two users were created and the user used by the python app didn't have the read & write permission on the database. 
-- Identification: populate the db with the credentials from VARENV in azure-cli and then deactivation of login by entra-id.
-- Resolution: force login by password.
+- **Issue**: Students' accounts lacked permissions to create credentials for GitHub Actions.
+- **Solution**: Deployment with commented-out credentials in `build_image.yml` was attempted, but additional manual setup was required.
 
+### Database
 
-###### Virtual network:
+- **Issue**: Two database users were created, and the app's user lacked read/write permissions.
+- **Identification**: Populated the database using Azure CLI and identified a misconfiguration.
+- **Solution**: Forced password login and deactivated Entra ID login.
 
-- Conflict: wrong strategy for this project. implementing virtual network at the end was too complicated and too long.
-- Identification: time consumption was going up and results were not going up. It also broked the working terraform modules.
-- Resolution: none, but if we started this king of project again we'll start by this.
+### Virtual Network
 
+- **Issue**: Late-stage implementation of the virtual network caused significant delays and broke existing Terraform modules.
+- **Identification**: Increased time consumption without functional gains.
+- **Solution**: No resolution during the project. For future projects, virtual network setup should be a priority.
+
+---
