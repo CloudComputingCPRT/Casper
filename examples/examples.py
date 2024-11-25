@@ -43,9 +43,12 @@ def read_examples():
         # print PostgreSQL Connection properties
         print(conn.get_dsn_parameters(), "\n")
 
-        # print PostgreSQL all tables
-        tables = cur.fetchall()
-        print("Tables:", tables)
+        cur.execute(
+            """SELECT table_name FROM information_schema.tables
+       WHERE table_schema = 'public'"""
+        )
+        for table in cur.fetchall():
+            print(table)
 
         cur.execute("SELECT * FROM examples")
         examples = cur.fetchall()
@@ -68,7 +71,9 @@ def read_quotes():
     try:
         account_url = get_environment_variable("STORAGE_ACCOUNT_URL")
         default_credential = DefaultAzureCredential(process_timeout=2)
-        blob_service_client = BlobServiceClient(account_url, credential=default_credential)
+        blob_service_client = BlobServiceClient(
+            account_url, credential=default_credential
+        )
 
         container_client = blob_service_client.get_container_client(container="api")
         quotes = json.loads(container_client.download_blob("quotes.json").readall())
