@@ -34,7 +34,7 @@ graph TD;
         F2 --> F3[Static Analysis]
         F3 --> F4[Build]
         F4 --> F5[Docker Build]
-        F5 --> F6[Deployment (on main)]
+        F5 --> F6[Deployment]
     end
 
     %% Connections
