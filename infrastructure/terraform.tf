@@ -17,10 +17,6 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.6"
     }
-    github = {
-      source  = "integrations/github"
-      version = "~> 6.3.0"
-    }
   }
   required_version = "~> 1.9"
 }
