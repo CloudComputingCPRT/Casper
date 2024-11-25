@@ -33,7 +33,7 @@ graph TD;
         F1[Test] --> F2[Lint]
         F2 --> F3[Static Analysis]
         F3 --> F4[Build]
-        F4 --> F5[Docker Build (if applicable)]
+        F4 --> F5[Docker Build]
         F5 --> F6[Deployment (on main)]
     end
 
