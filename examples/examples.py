@@ -20,14 +20,6 @@ def read_root():
 @app.get("/examples")
 def read_examples():
 
-    print("DATABASE_HOST", get_environment_variable("DATABASE_HOST"))
-    print("DATABASE_PORT", get_environment_variable("DATABASE_PORT", "5432"))
-    print("DATABASE_NAME", get_environment_variable("DATABASE_NAME"))
-    print("DATABASE_USER", get_environment_variable("DATABASE_USER"))
-    print("DATABASE_PASSWORD", get_environment_variable("DATABASE_PASSWORD"))
-
-    # Check if the database is reachable
-
     try:
         conn = psycopg2.connect(
             host=get_environment_variable("DATABASE_HOST"),
@@ -40,16 +32,21 @@ def read_examples():
 
         cur = conn.cursor()
 
-        # print PostgreSQL Connection properties
-        print(conn.get_dsn_parameters(), "\n")
-
+        # check if the table "examples" exists
         cur.execute(
-            """SELECT table_name FROM information_schema.tables
-       WHERE table_schema = 'public'"""
+            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'examples')"
         )
-        for table in cur.fetchall():
-            print(table)
+        table_exists = cur.fetchone()[0]
 
+        if not table_exists:
+            cur.execute("CREATE TABLE examples (id SERIAL PRIMARY KEY, name TEXT)")
+            conn.commit()
+
+            # insert an example row
+            cur.execute("INSERT INTO examples (name) VALUES ('Hello world!')")
+            conn.commit()
+
+        # retrieve all rows
         cur.execute("SELECT * FROM examples")
         examples = cur.fetchall()
         return {"examples": examples}

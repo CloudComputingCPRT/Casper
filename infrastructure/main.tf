@@ -11,9 +11,9 @@ data "azuread_user" "user" {
   user_principal_name = var.email_address
 }
 
-data "github_user" "user" {
-  username = var.github_handle
-}
+# data "github_user" "user" {
+#   username = var.github_handle
+# }
 
 # Resource Group
 resource "azurerm_resource_group" "casper" {
