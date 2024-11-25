@@ -9,14 +9,24 @@
 
 ### How to use it 
 
-Please refer to this [file](https://github.com/CloudComputingCPRT/Casper/blob/main/HOWTO.md)
+Please refer to this [file](https://github.com/CloudComputingCPRT/Casper/blob/main/HOWTO.md) for local use.
+
+you need to start by creating a **terraform.tfvars** in th ./infrastructure/ directory and filling it with thoose variables:
+```
+github_handle         = <your github account name>
+email_address         = <your azure email adress>
+subscription_id       = <your subscription id>
+database_name         = <the wanted name for the database>
+database_username     = <the wanted username for the database>
+new_relic_licence_key = <your new relic license key>
+```
 
 ### Workflow
-We used github reusable actions for more adaptability. It's overkill for the actual project but a good example of how it should work for a bigger project. 
+We used github reusable actions for more adaptability we shared the actions with some other groups to help them and prove the modularity of reusable actions.
+It's actually overkill for the project but a good example of how it should work for a bigger project.
 
 - For the working branches we added a linter (flake8), used the provided tests, a code analysis and a build check.  
 - For the releases and main branches, we first validate the changes comming from the pullrequest and then use the same workflow without the lient & test, and adding a build docker image action to create our packages.
-
 
 ```mermaid
 graph TD;
@@ -66,3 +76,26 @@ graph TD;
     W4 --> R1
     W6 --> M1
 ```
+
+### Troubleshooting
+During the project we had some problems. The first one is that terraform apply is time consuming, with an average of 20 minutess per try it was complicated to debug some configuration errors.
+Here's some issue we encountered:
+
+###### Deployement:
+
+- Conflict: junia students accounts don't have the required permission to create credentials that enable deployement from github action.
+- Identification: trying to deploy with the commented code at the end of the build_image.yml wasn't working due to missing credentials.
+
+###### Database:
+
+- Conflict: two users were created and the user used by the python app didn't have the read & write permission on the database. 
+- Identification: populate the db with the credentials from VARENV in azure-cli and then deactivation of login by entra-id.
+- Resolution: force login by password.
+
+
+###### Virtual network:
+
+- Conflict: wrong strategy for this project. implementing virtual network at the end was too complicated and too long.
+- Identification: time consumption was going up and results were not going up. It also broked the working terraform modules.
+- Resolution: none, but if we started this king of project again we'll start by this.
+
