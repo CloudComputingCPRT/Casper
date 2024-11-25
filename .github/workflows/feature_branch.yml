@@ -1,3 +1,6 @@
+# Workflow Name: Feature Branch Workflow
+# Description: This workflow is triggered by changes in feature (`feat/*`) or fix (`fix/*`) branches.
+# It performs linting, testing, code analysis, and builds the project. It leverages reusable workflows. 
 name: Feature Branch Workflow
 
 on:
@@ -17,18 +20,25 @@ permissions:
   security-events: write  # Allows uploading security results
 
 jobs:
-
+  # Job 1: Lint and Test
+  # Description: This job uses a reusable workflow (`lint_test.yml`) to lint the code and run tests.
   lint-and-test:
     uses: ./.github/workflows/lint_test.yml
     with:
       python-version: "3.12"
-
+  
+  # Job 2: Code Analysis
+  # Description: This job performs advanced code analysis (e.g., CodeQL) after linting and testing.
+  # Dependency: Waits for the `lint-and-test` job to complete successfully.
   analysis:
     needs: lint-and-test
     uses: ./.github/workflows/analysis.yml
     with:
       run_codeql: true
   
+  # Job 3: Build
+  # Description: This job builds the project using a reusable build workflow.
+  # Dependency: Waits for the `analysis` job to complete successfully.
   build:
     needs: Analysis
     uses: ./.github/workflows/build.yml

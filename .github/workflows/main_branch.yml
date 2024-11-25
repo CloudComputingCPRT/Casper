@@ -1,12 +1,13 @@
+# Workflow Name: Main Workflow
+# Description: This workflow runs on the `main` branch for pull requests and pushes.
+# It validates changes, performs code analysis, builds the project, and creates a release Docker image.
 name: Main Workflow
 
 on:
-  # Trigger for pull requests targeting main branche
   pull_request:
     branches:
       - main
 
-  # Trigger when a commit is pushed to a release branch (after a PR merge)
   push:
     branches:
       - main
@@ -18,19 +19,26 @@ permissions:
   security-events: write
 
 jobs:
-  # Step 1: Lint, Test, and Analyze for Pull Requests
+  # Job 1: Validate Changes
+  # Description: Lints the code and runs tests to ensure the `main` branch changes are valid.
   validate_changes:
     uses: ./.github/workflows/lint_test.yml
     with:
       python-version: "3.12"
 
+  # Job 2: Analyze Code
+  # Description: Performs advanced code analysis (e.g., CodeQL) after validating changes.
+  # Dependency: Waits for `validate_changes` to complete successfully.
   analyze_codeql:
     needs: validate_changes
     uses: ./.github/workflows/analysis.yml
     with:
       run_codeql: true
 
-  # Step 2: On Merge to main, Build and Push Docker Image
+  # Job 3: Build and Package
+  # Description: Builds and packages the project after validation and code analysis.
+  # Restriction: Runs only on `push` events targeting the `main` branch.
+  # Dependency: Waits for `validate_changes` and `analyze_codeql` to complete successfully.
   build_and_package:
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main') }}
     needs: [validate_changes, analyze_codeql]  # Optional; ensures previous steps pass even on merge
@@ -38,6 +46,10 @@ jobs:
     with:
       python-version: "3.12"
 
+  # Job 4: Build Docker Image
+  # Description: Builds and pushes a release Docker image for the `main` branch.
+  # Restriction: Runs only on `push` events to the `main` branch.
+  # Dependency: Waits for `validate_changes`, `analyze_codeql`, and `build_and_package` to complete successfully.
   build_docker_image:
     if: ${{ github.event_name == 'push' }}
     needs: [validate_changes, analyze_codeql, build_and_package]

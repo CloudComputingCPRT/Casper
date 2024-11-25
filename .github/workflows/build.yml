@@ -1,3 +1,6 @@
+# Workflow Name: Build Workflow
+# Description: This workflow builds the Python project using the `uv` tool for dependency and build management.
+# Note: This workflow is triggered only when called by another workflow using `workflow_call`.
 name: Build Workflow
 
 on:
@@ -7,6 +10,7 @@ on:
         required: true
         type: string
 
+# Permissions required for this workflow.
 permissions:
   contents: read  # Ensure read access to the repository's content
 
@@ -16,16 +20,19 @@ jobs:
 
     steps:
       # Step 1: Check out the repository code
+      # Purpose: Retrieves the codebase from the repository for the build process.
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python environment
+      # Step 2: Set up the Python environment
+      # Purpose: Installs and configures the specified version of Python on the runner.
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python-version }}
 
-      # Step 3: Install dependencies for `uv`
+       # Step 3: Install dependencies for `uv`
+      # Purpose: Upgrade `pip`, install the `uv` tool, and sync the project dependencies.
       - name: Install `uv` and project dependencies
         run: |
           python -m pip install --upgrade pip
@@ -33,11 +40,13 @@ jobs:
           uv sync          # Sync dependencies using `uv`
 
       # Step 4: Build the project
+      # Purpose: Use `uv build` to build the project artifacts.
       - name: Build the project
         run: |
           uv build          # Run the `uv build` command to build the project
 
-      # Optional: Verify the build
+      # Step 5: Verify the build
+      # Purpose: Output a success message upon successful build completion.
       - name: Verify build
         run: |
           echo "Build completed successfully!"
