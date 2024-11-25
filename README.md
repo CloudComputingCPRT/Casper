@@ -8,6 +8,11 @@
 - Rémi Van Boxem
 
 ### Workflow
+We used github reusable actions for more adaptability. 
+
+- For the working branches we add a linter (flake8), used the provided tests, a code analysis and a build check.  
+- For the releases and main branches, we first validate the changes comming from the pullrequest and then use the same workflow without the lient & test, and adding a build docker image action to create our packages.
+
 
 ```mermaid
 graph TD;
