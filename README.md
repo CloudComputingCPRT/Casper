@@ -7,6 +7,10 @@
 - Thibaut Tournemaine
 - Rémi Van Boxem
 
+### How to use it 
+
+Please refer to this [file](https://github.com/CloudComputingCPRT/Casper/blob/main/HOWTO.md)
+
 ### Workflow
 We used github reusable actions for more adaptability. It's overkill for the actual project but a good example of how it should work for a bigger project. 
 
