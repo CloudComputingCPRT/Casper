@@ -44,7 +44,7 @@ def read_examples():
         print(conn.get_dsn_parameters(), "\n")
 
         # print PostgreSQL all tables
-        cur.execute("\dt")
+        cur.execute("\\dt")
         tables = cur.fetchall()
         print("Tables:", tables)
 
