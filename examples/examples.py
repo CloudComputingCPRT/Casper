@@ -19,6 +19,15 @@ def read_root():
 
 @app.get("/examples")
 def read_examples():
+
+    print("DATABASE_HOST", get_environment_variable("DATABASE_HOST"))
+    print("DATABASE_PORT", get_environment_variable("DATABASE_PORT", "5432"))
+    print("DATABASE_NAME", get_environment_variable("DATABASE_NAME"))
+    print("DATABASE_USER", get_environment_variable("DATABASE_USER"))
+    print("DATABASE_PASSWORD", get_environment_variable("DATABASE_PASSWORD"))
+
+    # Check if the database is reachable
+
     try:
         conn = psycopg2.connect(
             host=get_environment_variable("DATABASE_HOST"),
@@ -30,6 +39,15 @@ def read_examples():
         )
 
         cur = conn.cursor()
+
+        # print PostgreSQL Connection properties
+        print(conn.get_dsn_parameters(), "\n")
+
+        # print PostgreSQL all tables
+        cur.execute("\\dt")
+        tables = cur.fetchall()
+        print("Tables:", tables)
+
         cur.execute("SELECT * FROM examples")
         examples = cur.fetchall()
         return {"examples": examples}
