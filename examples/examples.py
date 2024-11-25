@@ -43,7 +43,6 @@ def read_examples():
         # print PostgreSQL Connection properties
         print(conn.get_dsn_parameters(), "\n")
 
-
         cur.execute(
             """SELECT table_name FROM information_schema.tables
        WHERE table_schema = 'public'"""
